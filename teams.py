@@ -20,8 +20,7 @@ def update_team_details():
         try:
             update_team(team,id)
         except Exception as e:
-            raise Exception(e)
-    print('completed team update')
+            raise Exception("An error occured in teams.py update_team_details: " + str(e))
 
 def get_link(id):
     suffix = "/api/v1/teams/"+str(id)+"?expand=team.schedule.next"
@@ -33,3 +32,6 @@ def get_link(id):
     else:
         link = response.json()["teams"][0]["nextGameSchedule"]["dates"][0]["games"][0]["link"]
         return link
+
+def find_team(identifier):
+    return get_team(identifier)
