@@ -2,7 +2,6 @@ import discord
 import logging
 import json
 import requests
-import sched, time
 from teams import *
 from games import *
 
@@ -18,39 +17,38 @@ token = data['token']
 messages = int(data['messages'])
 logs = int(data['logs'])
 
+#should be run once a day in the morning
+async def update_everything(channel):
+    try:
+        update_team_details()
+        await channel.send("team list and links updated")
+        update_game_info()
+        await channel.send("game details updated")
+        remove_complete()
+        await channel.send("removed completed games")
+    except Exception as e:
+        await channel.send(e)
+            
+#should be run every 10 seconds while a game in the database is in progress (not status 1 or 7)
+async def in_game_update(channel):
+    await channel.send("goals were scored")
+
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged in as')
         print(self.user.name)
         print(self.user.id)
         print('------')
-        message_channel = discord.Client.get_channel(self,messages)
         logs_channel = discord.Client.get_channel(self,logs)
-        s = sched.scheduler(time.time, time.sleep)
+        message_channel = discord.Client.get_channel(self,messages)
+
 
     async def on_message(self, message):
         if message.author.id == self.user.id:
             return
 
         if message.content.startswith('!hello'):
-            await update_everything(channel)
-
-#should be run once a day in the morning
-    async def update_everything(channel)
-        try:
-            update_team_details()
-            await logs_channel.send("team list and links updated")
-            update_game_info()
-            await logs_channel.send("game details updated")
-            remove_complete()
-            await logs_channel.send("removed completed games")
-        except Exception as e:
-            await logs_channel.send(e)
-        s.enter(
-            
-#should be run every 10 seconds while a game in the database is in progress (not status 1 or 7)
-    async def in_game_update():
-        #todo implement
+            await self.update_everything()
 
 client = MyClient()
 client.run(token)

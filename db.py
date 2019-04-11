@@ -40,4 +40,8 @@ def remove_game():
 
 def get_goals(id):
     try:
-        db.games.
+        goals = db.games.findOne({"_id" : id},
+                                 {"goals": 1},{"_id": 0})
+        return goals
+    except Exception as e:
+        raise Exception("Could not get goals info: " + str(e))

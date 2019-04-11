@@ -10,6 +10,7 @@ def update_game_info():
         gameData = response.json()
         id = gameData["gamePk"]
         goals = gameData["liveData"]["plays"]["scoringPlays"]
+        check_new_goal(goals,id)
         game = {
             '_id' : id,
             'goals' : goals,
@@ -28,5 +29,13 @@ def remove_complete():
     remove_game()
     print('removed complete games')
 
-def check_goal(old, new):
-    if 
+def check_new_goal(new,id):
+    old = get_goals(id)
+    if new>old:
+        print("a goal was scored")
+    else if old > new:
+        print("a goal was overturned")
+    else:
+        print("nothing happened")
+    
+    
