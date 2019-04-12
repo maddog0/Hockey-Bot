@@ -44,26 +44,30 @@ class MyClient(discord.Client):
         channel = self.get_channel(int(logs))
         while not self.is_closed():
             try:
-                update_game_info()
-                await channel.send("game details updated")
-                remove_complete()
-                await channel.send("removed completed games")
                 update_team_details()
-                await channel.send("team list and links updated")
+                await channel.send("team list and links updated")                
+                update_next_game_info()
+                await channel.send("next game info updated")
             except Exception as e:
                 await channel.send(e)
             await asyncio.sleep(43200)
 
-    #should be run every 10 seconds while a game in the database is in progress (not status 1 or 7)
+    #should be run every 10 seconds while a game in the database is in progress (status 2-5)
     async def in_game_update(self):
-        await self.wait_until_ready()
+        await self.wait_until_ready()        
         channel = self.get_channel(int(messages))
         while not self.is_closed():
             if is_game_live() == True:
-                check_for_goals()
+                print("live")
+                for message in check_for_goals():
+                    message.upper()
+                    await channel.send(message)
                 await asyncio.sleep(10)
             else:
-                update_game_info()                
+                print("cleanup")
+                update_finished_games()
+                print("removing")
+                remove_complete()
                 await asyncio.sleep(1800)
 
 client = MyClient()
