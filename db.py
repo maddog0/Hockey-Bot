@@ -72,12 +72,12 @@ def get_game_by_team(team_identifier):
         raise Exception("An error occured in db.py get_game_by_team: " + str(e))
 
 #returns the document for a live game if there is one, returns None otherwise
-def check_live_game():
+def get_live_games():
     try:
-        cursor = db.games.find_one({"$or": [{"status": 3},
-                                  {"status": 4},
-                                  {"status": 5}]})
-        print(cursor)
+        cursor = list(db.games.find({"$or": [{"status":'2'},
+                                  {"status":'3'},
+                                  {"status":'4'},
+                                  {"status":'5'}]}))
         return cursor
     except Exception as e:
         raise Exception("An error occured in db.py get_live_games: " + str(e))

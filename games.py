@@ -14,6 +14,7 @@ def update_game_info():
         game = {
             '_id' : id,
             'goals' : goals,
+            'link' : gameData["link"],
             'start' : gameData["gameData"]["datetime"]["dateTime"],
             'status' : gameData["gameData"]["status"]["statusCode"],
             'home' : gameData["gameData"]["teams"]["home"]["name"],
@@ -24,7 +25,7 @@ def update_game_info():
             'awayTriCode' : gameData["gameData"]["teams"]["away"]["triCode"],
             'awayTeamName' : gameData["gameData"]["teams"]["away"]["teamName"],
             'awayTeamLocation' : gameData["gameData"]["teams"]["away"]["locationName"],
-            'goaldetails': None
+            'goaldetails': []
         }
         try:
             update_game(game,id)
@@ -53,7 +54,22 @@ def find_game_involving_team(identifier):
 
 #returns true if a game is currently live (state 3 4 or 5) returns false otherwise    
 def is_game_live():
-    if check_live_game() is not None:
+    if len(get_live_games()) != 0:
         return True
     else:
         return False
+
+def check_for_goals():
+    games = get_live_games()
+    for game in games:
+        response = requests.get(prefix+game['link'])
+        gameData = response.json()
+        new_goals = gameData["liveData"]["plays"]["scoringPlays"]
+        old_goals = game['goals']
+        if len(new_goals)>len(old_goals):
+            print("a goal has been scored we need to do something here")
+        elif len(old_goals)>len(new_goals):
+            print("a goal we previously reported on has been overturned we need to update things accordingly")
+        else:
+            return
+    

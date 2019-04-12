@@ -22,8 +22,8 @@ class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.bg_task = self.loop.create_task(self.update_everything())
         self.bg_task = self.loop.create_task(self.in_game_update())
-        self.bg_task = self.loop.create_task(self.update_everything())        
 
     async def on_ready(self):
         print('Logged in as')
@@ -52,7 +52,7 @@ class MyClient(discord.Client):
                 await channel.send("team list and links updated")
             except Exception as e:
                 await channel.send(e)
-            await asyncio.sleep(200)
+            await asyncio.sleep(43200)
 
     #should be run every 10 seconds while a game in the database is in progress (not status 1 or 7)
     async def in_game_update(self):
@@ -60,10 +60,10 @@ class MyClient(discord.Client):
         channel = self.get_channel(int(messages))
         while not self.is_closed():
             if is_game_live() == True:
-                await channel.send("live game")
+                check_for_goals()
                 await asyncio.sleep(10)
             else:
-                await channel.send("no live game")
+                update_game_info()                
                 await asyncio.sleep(1800)
 
 client = MyClient()
