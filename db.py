@@ -99,3 +99,10 @@ def get_finished_games():
         return cursor
     except Exception as e:
         raise Exception("An error occured in db.py get_finished_games: " + str(e))
+
+def get_all_games():
+    try:
+        cursor = list(db.games.find())
+        return cursor
+    except Exception as e:
+        raise Exception("An error occured in db.py get_all_games: " + str(e))

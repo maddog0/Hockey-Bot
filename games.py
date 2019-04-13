@@ -36,17 +36,6 @@ def update_next_game_info():
 def remove_complete():
     remove_games()
 
-#def check_new_goal(new,id):
-#    old = get_goals_in_game(id)
-#    print(type(old))
-#    print(id)
-#    if len(new)>len(old):
-#        print("a goal was scored in game " + id)
-#    elif len(old) > len(new):
-#        print("a goal was overturned in game " + id)
-#    else:
-#        print("nothing happened in game " + id)
-
 #takes in some form of identifying information and pulls back details on the game that team is involved in if there are any
 #Identification data can be the team name, the full name, the tricode, or the city the team is based in
 def find_game_involving_team(identifier):
@@ -58,6 +47,14 @@ def is_game_live():
         return True
     else:
         return False
+
+def update_game_status():
+    games = get_all_games()
+    for game in games:
+        response = requests.get(prefix+game["link"])
+        gameData = response.json()
+        game["status"] = gameData["gameData"]["status"]["statusCode"]
+        update_game(game,game["_id"])
 
 def check_for_goals():
     games = get_live_games()
@@ -107,6 +104,13 @@ def update_finished_games():
         
         
 def parse_goal(goal,home,away):
-    message = "GOAL!!! SCORED BY " + goal["result"]["description"]
+    scorer = goal["result"]["description"]
+    home_score = goal["about"]["goals"]["home"]
+    away_score = goal["about"]["goals"]["away"]
+    time = goal["about"]["periodTime"]
+    period = goal["about"]["ordinalNum"]
+    message = '''goal!!!! scored by: {0}
+{1}-{2}  {3}-{4}
+time of the goal {5} of the {6} period'''.format(scorer,home,home_score,away,away_score,time,period)
     uppercase = message.upper()
     return uppercase

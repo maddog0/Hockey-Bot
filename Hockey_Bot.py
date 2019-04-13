@@ -60,14 +60,14 @@ class MyClient(discord.Client):
             if is_game_live() == True:
                 print("live")
                 for message in check_for_goals():
-                    message.upper()
                     await channel.send(message)
+                update_game_status()
                 await asyncio.sleep(10)
             else:
                 print("cleanup")
                 update_finished_games()
-                print("removing")
                 remove_complete()
+                update_game_status()
                 await asyncio.sleep(1800)
 
 client = MyClient()
