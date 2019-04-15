@@ -34,7 +34,10 @@ def update_next_game_info():
 
 #removes games that are totally complete (status 7)
 def remove_complete():
-    remove_games()
+    try:
+        remove_games()
+    except Exception as e:
+        raise Exception("An error occured in games.py remove_complete: " + str(e))
 
 #takes in some form of identifying information and pulls back details on the game that team is involved in if there are any
 #Identification data can be the team name, the full name, the tricode, or the city the team is based in
@@ -43,25 +46,30 @@ def find_game_involving_team(identifier):
 
 #returns true if a game is currently live (state 3 4 or 5) returns false otherwise    
 def is_game_live():
-    if len(get_live_games()) != 0:
-        return True
-    else:
-        return False
+    try:
+        if len(get_live_games()) != 0:
+            return True
+        else:
+            return False
+    except Exception as e:
+        raise Exception("An error occured in games.py is_game_live: " +str(e))
 
-def update_game_status():
-    games = get_all_games()
+def update_scheduled_games():
+    games = get_scheduled_games()
     for game in games:
         response = requests.get(prefix+game["link"])
         gameData = response.json()
         game["status"] = gameData["gameData"]["status"]["statusCode"]
         update_game(game,game["_id"])
 
-def check_for_goals():
+def check_game_updates():
     games = get_live_games()
     messages = []
-    for game in games:
+    for game in games:        
         response = requests.get(prefix+game["link"])
         gameData = response.json()
+        home = gameData["gameData"]["teams"]["home"]["triCode"]
+        away = gameData["gameData"]["teams"]["away"]["triCode"]
         new_goals = gameData["liveData"]["plays"]["scoringPlays"]
         old_goals = game["goals"]
         goals_scored = len(new_goals)-len(old_goals)
@@ -70,8 +78,6 @@ def check_for_goals():
             goalDetails = get_goal_details(new_goals,gameData)
             update_live_game_data(game,gameData,goalDetails)
             for goal in goalDetails:
-                home = gameData["gameData"]["teams"]["home"]["triCode"]
-                away = gameData["gameData"]["teams"]["away"]["triCode"]
                 messages.append(parse_goal(goal,home,away))
         if goals_scored<0:
             goalDetails = get_goal_details(new_goals,gameData)
@@ -96,11 +102,19 @@ def get_goal_details(goals,gameData):
 
 def update_finished_games():
     games = get_finished_games()
+    messages = []
     for game in games:
         response = requests.get(prefix+game["link"])
         gameData= response.json()
+        home = gameData["gameData"]["teams"]["home"]["triCode"]
+        home_score = gameData["liveData"]["linescore"]["teams"]["home"]["goals"]
+        away = gameData["gameData"]["teams"]["away"]["triCode"]
+        away_score = gameData["liveData"]["linescore"]["teams"]["away"]["goals"]
         game["status"] = gameData["gameData"]["status"]["statusCode"]
         update_game(game,game["_id"])
+        message = "game over Final Score: {0}-{1}  {2}-{3}".format(home,home_score,away,away_score)
+        messages.append(message)
+    return messages
         
         
 def parse_goal(goal,home,away):
@@ -112,5 +126,6 @@ def parse_goal(goal,home,away):
     message = '''goal!!!! scored by: {0}
 {1}-{2}  {3}-{4}
 time of the goal {5} of the {6} period'''.format(scorer,home,home_score,away,away_score,time,period)
-    uppercase = message.upper()
-    return uppercase
+    return message
+
+

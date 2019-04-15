@@ -86,7 +86,8 @@ def get_live_games():
         cursor = list(db.games.find({"$or": [{"status":'2'},
                                   {"status":'3'},
                                   {"status":'4'},
-                                  {"status":'5'}]}))
+                                  {"status":'5'},
+                                  {"status":'6'}]}))
         return cursor
     except Exception as e:
         raise Exception("An error occured in db.py get_live_games: " + str(e))
@@ -94,15 +95,14 @@ def get_live_games():
 #returns a list of all games that are finished
 def get_finished_games():
     try:
-        cursor = list(db.games.find({"$or": [{"status":'6'},
-                                  {"status":'7'}]}))
+        cursor = list(db.games.find({"status" : '7'}))
         return cursor
     except Exception as e:
         raise Exception("An error occured in db.py get_finished_games: " + str(e))
 
-def get_all_games():
+def get_scheduled_games():
     try:
-        cursor = list(db.games.find())
+        cursor = list(db.games.find({"status" : '1'}))
         return cursor
     except Exception as e:
         raise Exception("An error occured in db.py get_all_games: " + str(e))
