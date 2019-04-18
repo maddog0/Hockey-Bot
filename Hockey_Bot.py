@@ -5,6 +5,7 @@ import requests
 import asyncio
 from teams import *
 from games import *
+from discord.utils import find
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -15,7 +16,6 @@ logger.addHandler(handler)
 with open('config.json') as config_file:
     data = json.load(config_file)
 token = data['token']
-messages = int(data['messages'])
 logs = int(data['logs'])
 
 class MyClient(discord.Client):
@@ -39,6 +39,44 @@ class MyClient(discord.Client):
         if message.content.startswith('!hello'):
             await message.channel.send("YO")
 
+    async def on_guild_join(self, guild):
+        #logs = self.get_channel(int(logs))
+        hockey = find(lambda m: m.name == 'hockey', guild.text_channels)
+        sports = find(lambda m: m.name == 'sports', guild.text_channels)
+        general = find(lambda m: m.name == 'general', guild.text_channels)
+        id = guild.id
+        all_games = False
+        playoffs = True
+        liked_teams = []
+        messages = None
+        if hockey and hockey.permissions_for(guild.me).send_messages:
+            messages = hockey.id
+            await messages.send
+        elif sports and sports.permissions_for(guild.me).send_messages:
+            messages = sports.id
+        elif general and general.permissions_for(guild.me).send_messages:
+            messages = general.id
+        else:
+            print('no valid channel')
+        server = {
+            '_id' : id,
+            'messages' : messages,
+            'all_games' : all_games,
+            'playoffs' : playoffs,
+            'liked_teams' : liked_teams
+            }
+        try:
+            insert_server(server,id)
+        except Exception as e:
+            print('An error occured setting up a new server: ' + str(e))
+                                               
+    async def on_guild_remove(self, guild):
+        id = guild.id
+        try:
+            remove_server(id)
+        except Exception as e:
+            print('An error occured removing a server: ' + str(e))
+
     #should be run once a day in the morning
     async def morning_cleanup(self):
         await self.wait_until_ready()
@@ -49,6 +87,7 @@ class MyClient(discord.Client):
                 await channel.send("team list and links updated")                
                 update_next_game_info()
                 await channel.send("next game info updated")
+                remove_complete()
             except Exception as e:
                 await channel.send("An error occured in monring_cleanup: " + str(e))
             await asyncio.sleep(43200)
@@ -56,20 +95,25 @@ class MyClient(discord.Client):
     #should be run every 10 seconds while a game in the database is in progress (status 2-5)
     async def in_game_update(self):
         await self.wait_until_ready()        
-        channel = self.get_channel(int(messages))
+        channels = get_channels()
         while not self.is_closed():
             try:
                 if is_game_live() == True:
                     for message in check_game_updates():
-                        await channel.send(message.upper())
+                        for channel in channels:
+                            messages = self.get_channel(channel["messages"])
+                            await messages.send(message.upper())
                     for message in update_finished_games():
-                        await channel.send(message.upper())
+                        for channel in channels:
+                            messages = self.get_channel(channel["messages"])
+                            await messages.send(message.upper())
                     remove_complete()
                     await asyncio.sleep(1)
                 else:
                     for message in update_finished_games():
-                        await channel.send(message.upper())                      
-                    remove_complete()
+                        for channel in channels:
+                            messages = self.get_channel(channel["messages"])
+                            await messages.send(message.upper())                      
                     await asyncio.sleep(1800)
             except Exception as e:
                 print("An error occured in Hockey_Bot.py in game update: "+str(e))

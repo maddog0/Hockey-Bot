@@ -10,6 +10,29 @@ password = data['password']
 client = MongoClient(password)
 db = client.Hockey
 
+def insert_server(server,id):
+    try:
+        db.servers.replace_one(
+            {"_id": id},
+            server,
+            upsert = True)
+    except Exception as e:
+        raise Exception("An error occured in db.py insert_server: " + str(e))
+    
+def remove_server(id):
+    try:
+        db.servers.delete_many({"_id":id})
+    except Exception as e:
+        raise Exception("An error occured in db.py remove_server: " + str(e))
+
+def get_channels():
+    try:
+        cursor = list(db.servers.find({},{"_id": 0,"messages": 1}))
+        return cursor
+    except Exception as e:
+        raise Exception("An error occured in db.py get_channels: " + str(e))
+                      
+
 #work involving teams database
 def update_team(team,id):
     try:
@@ -49,7 +72,8 @@ def update_game(game,id):
 
 def remove_games():
     try:
-        db.games.delete_many({"status": "7"})
+        db.games.delete_many({"$or" : [{"status": "7"},
+                                       {"status": "8"}]})
     except Exception as e:
         raise Exception("An error occured in db.py remove_games: " + str(e))
 
