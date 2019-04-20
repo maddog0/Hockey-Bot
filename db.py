@@ -25,6 +25,15 @@ def remove_server(id):
     except Exception as e:
         raise Exception("An error occured in db.py remove_server: " + str(e))
 
+def update_server(id, key, value):
+    query = {"_id": id}
+    newvalue = {"$set": {key:value}}
+    db.servers.update_one(query,newvalue)
+
+def get_likedTeams(id):
+    cursor = db.servers.find_one({"_id" : id},{"_id": 0,"liked_teams":1})
+    return cursor
+
 def get_channels():
     try:
         cursor = list(db.servers.find({},{"_id": 0,"messages": 1}))
@@ -94,6 +103,7 @@ def get_game_by_team(team_identifier):
                                             {"awayTriCode": team_identifier},
                                             {"awayTeamName": team_identifier},
                                             {"awayTeamLocation": team_identifier}]})
+        return cursor
     except Exception as e:
         raise Exception("An error occured in db.py get_game_by_team: " + str(e))
 

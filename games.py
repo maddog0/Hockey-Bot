@@ -18,10 +18,12 @@ def update_next_game_info():
             'start' : gameData["gameData"]["datetime"]["dateTime"],
             'status' : gameData["gameData"]["status"]["statusCode"],
             'home' : gameData["gameData"]["teams"]["home"]["name"],
+            'homeScore' : gameData["liveData"]["linescore"]["teams"]["home"]["goals"],
             'homeTriCode' : gameData["gameData"]["teams"]["home"]["triCode"],
             'homeTeamName' : gameData["gameData"]["teams"]["home"]["teamName"],
             'homeTeamLocation' : gameData["gameData"]["teams"]["home"]["locationName"],
             'away' : gameData["gameData"]["teams"]["away"]["name"],
+            'awayScore' : gameData["liveData"]["linescore"]["teams"]["away"]["goals"],
             'awayTriCode' : gameData["gameData"]["teams"]["away"]["triCode"],
             'awayTeamName' : gameData["gameData"]["teams"]["away"]["teamName"],
             'awayTeamLocation' : gameData["gameData"]["teams"]["away"]["locationName"],
@@ -42,7 +44,7 @@ def remove_complete():
 #takes in some form of identifying information and pulls back details on the game that team is involved in if there are any
 #Identification data can be the team name, the full name, the tricode, or the city the team is based in
 def find_game_involving_team(identifier):
-    get_game_by_team(identifier)
+    return get_game_by_team(identifier)
 
 #returns true if a game is currently live (state 3 4 or 5) returns false otherwise    
 def is_game_live():
@@ -91,6 +93,8 @@ def update_live_game_data(game,gameData,goalDetails):
     game["goals"] = gameData["liveData"]["plays"]["scoringPlays"]
     game["status"] = gameData["gameData"]["status"]["statusCode"]
     game["goaldetails"] = goalDetails
+    game["homeScore"] = gameData["liveData"]["linescore"]["teams"]["home"]["goals"]
+    game["awayScore"] = gameData["liveData"]["linescore"]["teams"]["away"]["goals"]
     update_game(game,game["_id"])
     
     

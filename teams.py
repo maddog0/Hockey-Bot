@@ -26,5 +26,5 @@ def update_team_details():
             raise Exception("An error occured in teams.py update_team_details: " + str(e))
 
 
-def find_team(identifier):
-    return get_team(identifier)
+#def find_team(identifier):
+#    return get_team(identifier)

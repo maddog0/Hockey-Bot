@@ -22,10 +22,8 @@ logs = int(data['logs'])
 
 prefix = '!'
 bot = commands.Bot(command_prefix=prefix)
-
-@bot.command()
-async def test(ctx, a: bool):
-    await ctx.send(a)
+bot.load_extension("cogs.prefrencescog")
+bot.load_extension("cogs.gamecog")
 
 @bot.event
 async def on_ready():
